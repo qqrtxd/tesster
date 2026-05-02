@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Экзамены</title>
+    <link rel="icon" href="images/logo.ico">
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .question {
+            font-size: 18px;
+            margin-bottom: 15px;
+            cursor: move;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .options {
+            margin-bottom: 20px;
+        }
+
+        .option {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .option:hover {
+            background-color: #f1f1f1;
+            border-color: #aaa;
+        }
+
+        .option.selected {
+            background-color: #e0f7fa;
+            border-color: #00796b;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            text-align: center;
+        }
+
+        canvas {
+            margin-top: 20px;
+        }
+
+        .incorrect-answers {
+            margin-top: 20px;
+        }
+
+        .incorrect-answer {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .incorrect-answer p {
+            margin: 5px 0;
+        }
+
+        .incorrect-answer .your-answer {
+            color: #f44336;
+        }
+
+        .incorrect-answer .correct-answer {
+            color: #4caf50;
+        }
+
+        .incorrect-answer .question-text {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="timer">Время: 00:00</div>
+        <div id="question" class="question"></div>
+        <div id="image"></div>
+        <div id="options" class="options"></div>
+        <div class="controls">
+            <button id="prev">Предыдущий</button>
+            <button id="next">Следующий</button>
+        </div>
+        <button id="viewIncorrectAnswers">Посмотреть неправильные ответы</button>
+        <button id="finish">Завершить тест</button>
+        <div id="result" class="result"></div>
+        <div id="incorrectAnswers" class="incorrect-answers"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script>
+        const questions = [
+  {
+    "question": "Байланыс арналары",
+    "options": [
+      "арқылы біріктірілген компьютерлер жиынтығы",
+      "есептеуіш желі",
+      "конференция",
+      "дешифрлеу",
+      "сервер",
+      "тағайыедау порты"
+    ],
+    "correct": "арқылы біріктірілген компьютерлер жиынтығы",
+    "image": null
+  },
+  {
+    "question": "Желілік хаттамаларды көрсет",
+    "options": [
+      "TCP/IP,IPX/SPX  және NЕWLINK, APP, APLLE TALK, DECnet",
+      "Хаттама, порт, интерфейс, фрагмент",
+      "Шина, жұлдызша, күрделі, сақина",
+      "Локальды және аймақты желілер",
+      "HTML, SQL,LINIX, UNIX"
+    ],
+    "correct": "TCP/IP,IPX/SPX  және NЕWLINK, APP, APLLE TALK, DECnet",
+    "image": null
+  },
+  {
+    "question": "Желілік емес компонентінің таңданыз",
+    "options": [
+      "коцентратор",
+      "комунация",
+      "маршрутизатор",
+      "көпір",
+      "шлюз"
+    ],
+    "correct": "коцентратор",
+    "image": null
+  },
+  {
+    "question": "Желінін жалпы мәлімет беру ортасын бөліктерге бөліп келіп түскен мәліметтерді басқа сегментке тек адресіне байланысты жөнелтіп отратын құрылғы",
+    "options": [
+      "көпір",
+      "шлюз",
+      "трафик",
+      "коммунатор",
+      "концентратор"
+    ],
+    "correct": "көпір",
+    "image": null
+  },
+  {
+    "question": "Желідегі үштен көп компьютерге бөлінеді",
+    "options": [
+      "адрес",
+      "логин",
+      "атау",
+      "сызба",
+      "құрлым"
+    ],
+    "correct": "адрес",
+    "image": null
+  },
+  {
+    "question": "Екілік ақпартты жіберу үшін оптоташалдықты кабельдерді  пайдаланады",
+    "options": [
+      "жарықты импульстер",
+      "жарықтық сигналдар",
+      "кадр",
+      "дыбыстар",
+      "электр сигналдары"
+    ],
+    "correct": "жарықты импульстер",
+    "image": null
+  },
+  {
+    "question": "Компьютердін физикалық байланысу конфигурациясы",
+    "options": [
+      "топология",
+      "шифрлеу",
+      "біріктірілуі",
+      "дешифрлеу",
+      "байланыстыру"
+    ],
+    "correct": "топология",
+    "image": null
+  },
+  {
+    "question": "Желінін конфигурациясның түрлері",
+    "options": [
+      "толық байланыс толық емес байланыс",
+      "байланыс толық байланыс",
+      "байланыс байланыс емес",
+      "құрама құрама емес",
+      "ьолық байланысты байланысты емес"
+    ],
+    "correct": "толық байланыс толық емес байланыс",
+    "image": null
+  },
+  {
+    "question": "Ортаға көптік рұқсатты бақылау және коллизияны анықтау тәсілі бар желі",
+    "options": [
+      "Ethernet",
+      "FDDI",
+      "TokenRing",
+      "Arcnet",
+      "жауап жоқ"
+    ],
+    "correct": "Ethernet",
+    "image": null
+  },
+  {
+    "question": "Көптеген бас тартулар өзінін көп жұмыс істеу қаблеттілігін қайта қалпына келтіретін желі",
+    "options": [
+      "FDDI",
+      "ArcNet",
+      "TokenRing",
+      "Ethernet",
+      "онадй желі жоқ"
+    ],
+    "correct": "FDDI",
+    "image": null
+  },
+  {
+    "question": "Эталондық желілік модель",
+    "options": [
+      "OSI",
+      "Ethernet",
+      "Xerox",
+      "IEEE",
+      "ACSII"
+    ],
+    "correct": "OSI",
+    "image": null
+  },
+  {
+    "question": "Берілгендерді щифрлеу және дишифлеуді орындайтын деңгейі",
+    "options": [
+      "Ұсыныс",
+      "көліктік",
+      "Физикалық арналық",
+      "желіілік",
+      "арналық"
+    ],
+    "correct": "Ұсыныс",
+    "image": null
+  },
+  {
+    "question": "Компьютерлер арасында мәліметтерді жеткізуді басқарады-",
+    "options": [
+      "TCP/IP (Transmission Control Protocol)",
+      "Internetwork Packet Exchande / Seguenced Packet Exchamge (IPX/SPX)",
+      "Xerox Network System (XNS)",
+      "OLI хаттамалар жиыны",
+      "Aplle Talk-Aplle Macintosh"
+    ],
+    "correct": "TCP/IP (Transmission Control Protocol)",
+    "image": null
+  },
+  {
+    "question": "Дәл осы уақытта қай жақ активті екенін тіркейтін жақ байланысты юасқарлатын деңгей",
+    "options": [
+      "сеанстық",
+      "физикалық",
+      "қолданюбалы",
+      "Көліктік",
+      "желілік"
+    ],
+    "correct": "сеанстық",
+    "image": null
+  },
+  {
+    "question": "Маршрутизаторлар жұмыс жасайтын OSI модельінің денгейі",
+    "options": [
+      "Желілік",
+      "арналық",
+      "қолданбалы",
+      "көліктік",
+      "желілік"
+    ],
+    "correct": "Желілік",
+    "image": null
+  },
+  {
+    "question": "Желілік адаптердін желілік топсымының жалғануын анықтайтын денгей",
+    "options": [
+      "Физикалық",
+      "арналық",
+      "көліктік",
+      "желілік",
+      "бірігу"
+    ],
+    "correct": "Физикалық",
+    "image": null
+  },
+  {
+    "question": "Пакеттерді кескіндеуге фраменттеу қаблеті бар, қолайлы адрестеу жүйесімен және кең дидарлы таратулардан бас тартатын хаттар стегі",
+    "options": [
+      "TCP\\SPX",
+      "SNA",
+      "OSI",
+      "NETBIOS/SMB",
+      "IPX/SPX"
+    ],
+    "correct": "TCP\\SPX",
+    "image": null
+  },
+  {
+    "question": "Қосымшалардың өзара іс әрекеттерні мен мәліметтер алмасу қамтамасыз ететін хабарлама",
+    "options": [
+      "Қолданбалы",
+      "Кқліктік",
+      "Желілік",
+      "Арнаулық",
+      "маршрттық"
+    ],
+    "correct": "Қолданбалы",
+    "image": null
+  },
+  {
+    "question": "Адрестер өрісінде көрсетілген нөмерлі тоептардан құрайтын бірнеше түйінге бір мезгілде жеткізу тиіс пакет",
+    "options": [
+      "Multicast",
+      "Limited multificst",
+      "loopback",
+      "Broadcast",
+      "Limited beoacast"
+    ],
+    "correct": "Multicast",
+    "image": null
+  },
+  {
+    "question": "Электронды поштамен жаңалықтар тобымен жұмыс жасауға барлық қажетті тәсілдерді қолдайтын қосымша",
+    "options": [
+      "Windous internet explolrer",
+      "AutoCad",
+      "MS Word",
+      "CorelDraw",
+      "AdobeResider"
+    ],
+    "correct": "Windous internet explolrer",
+    "image": null
+  },
+  {
+    "question": "Кілт негізінде құрылатын генорациялардын бастапқы әтінге псевдокездесоқ тізбектін орналасу әдісі",
+    "options": [
+      "гаммирлеу",
+      "Орын ауыстыру",
+      "алмастыру",
+      "Аралас шифрлеу",
+      "Аналитикалық түрлендіру"
+    ],
+    "correct": "гаммирлеу",
+    "image": null
+  },
+  {
+    "question": "Компьютерлер арасында мәліметтерді жеткізуді басқарады-",
+    "options": [
+      "TCP/IP (Transmission Control Protocol)",
+      "Internetwork Packet Exchande / Seguenced Packet Exchamge (IPX/SPX)",
+      "Xerox Network System (XNS)",
+      "OLI хаттамалар жиыны",
+      "Aplle Talk-Aplle Macintosh"
+    ],
+    "correct": "TCP/IP (Transmission Control Protocol)",
+    "image": null
+  },
+  {
+    "question": "SMTP (Simple Mail Transfer Protocol) қандай хаттама болып саналады",
+    "options": [
+      "Элекрондық пошта",
+      "Интернет",
+      "Желіге арналған",
+      "TCP/IP хаттамасының бөлшегі",
+      "Хаттамалар стегі"
+    ],
+    "correct": "Элекрондық пошта",
+    "image": null
+  },
+  {
+    "question": "Электронды пошта жүйесі қай жылы пайда болды?",
+    "options": [
+      "1971 ж",
+      "1972 ж",
+      "1961 ж",
+      "1965 ж",
+      "1975 ж"
+    ],
+    "correct": "1971 ж",
+    "image": null
+  },
+  {
+    "question": "Интернеттің техникалық жабдықталуы бұл -",
+    "options": [
+      "компьютерлерлік түйіндер, маршрутизаторлар, байланыс каналы, компьютерлер",
+      "компьютерлерлік түйіндер, маршрутизаторлар, байланыс каналы",
+      "коннекторлар, маршрутизаторлар, байланыс каналы, компьютерлер",
+      "компьютерлерлік түйіндер, модем, байланыс каналы, компьютерлер",
+      "компьютерлерлік түйіндер, маршрутизаторлар, адресі, компьютерлер"
+    ],
+    "correct": "компьютерлерлік түйіндер, маршрутизаторлар, байланыс каналы, компьютерлер",
+    "image": null
+  },
+  {
+    "question": "Провайдер -",
+    "options": [
+      "Интернетке шығуға мүмкіндік жасаушы және қызмет көрсетуші компания",
+      "байланыстырушы желіге үнемі қосылып тұратын бір немесе бірнеше күшті компьютерлер",
+      "құрылғы, яғни бұлардың көмегімен ақпараттар пакетін желі арқылы бір бағыттан екінші бағытқа бағыттап отырады",
+      "телефондық линия арқылы қолданушының компьютерін Интернетпен қосатын құрылғы",
+      "Интернеттегі хабарлардың түзілуі мен құрылу ережелерінің келісім Интернетке шығуға мүмкіндік жасаушы және қызмет көрсетуші компания құралы"
+    ],
+    "correct": "Интернетке шығуға мүмкіндік жасаушы және қызмет көрсетуші компания",
+    "image": null
+  },
+  {
+    "question": "Хост-компьютерлер -",
+    "options": [
+      "байланыстырушы желіге үнемі қосылып тұратын бір немесе бірнеше күшті компьютерлер",
+      "ақпараттар пакетін желі арқылы бір бағыттан екінші бағытқа бағыттап отырады",
+      "телефондық линия арқылы қолданушының компьютерін Интернетпен қосатын құрылғы",
+      "Интернеттегі хабарлардың түзілуі мен құрылу ережелерінің келісім құралы",
+      "Интернетке шығуға мүмкіндік жасаушы және қызмет көрсетуші компания"
+    ],
+    "correct": "байланыстырушы желіге үнемі қосылып тұратын бір немесе бірнеше күшті компьютерлер",
+    "image": null
+  },
+  {
+    "question": "Веб-сайтының ішкі құрамына қандай түрі жатпайды",
+    "options": [
+      "тармақталған",
+      "сызықтық",
+      "гибриттік",
+      "Ағаштар",
+      "торлы"
+    ],
+    "correct": "тармақталған",
+    "image": null
+  },
+  {
+    "question": "Екі сымнан құралатын, біреуі екіншіснің ішінде орналасқан топсым",
+    "options": [
+      "коаксиалды",
+      "двужильный",
+      "Желілік",
+      "технологиялық",
+      "Бұрама желі"
+    ],
+    "correct": "коаксиалды",
+    "image": null
+  },
+  {
+    "question": "Желіде «жұлдызша-шина» топологиясында «жұлдызша» топологиясы бойынша бірнеше желілерді біріктіретін құрылғы",
+    "options": [
+      "Магистральді шина",
+      "модем",
+      "Терминатор",
+      "конденцатор",
+      "Желілік карта"
+    ],
+    "correct": "Магистральді шина",
+    "image": null
+  },
+  {
+    "question": "«Коммунатцияланған пакеттер» әдісімен мәліметтерді жіберу түйіні",
+    "options": [
+      "Мәліметтер алмасу жіберуге арналған уақыт арасында іске асырады",
+      "Ақпарттын тұрақты ұзындығы порциямен және бірінші басылған арнамен жіберледі",
+      "Екі клент арқылы хабарлама жберу үшін топ ішіндег арнаны қосатын тікелей байланыс",
+      "Ақпарат тұрақталмаған ұзындығы порциямен және бірінші босаған арнмен жіберіледі",
+      "Ақпарат тұрақталған ұзындықты порциямен жібереді"
+    ],
+    "correct": "Мәліметтер алмасу жіберуге арналған уақыт арасында іске асырады",
+    "image": null
+  },
+  {
+    "question": "Маршрутизаторлар -",
+    "options": [
+      "ақпараттар пакетін желі арқылы бір бағыттан екінші бағытқа бағыттап отырады",
+      "телефондық линия арқылы қолданушының компьютерін Интернетпен қосатын құрылғы",
+      "Интернеттегі хабарлардың түзілуі мен құрылу ережелерінің келісім құралы",
+      "Интернетке шығуға мүмкіндік жасаушы және қызмет көрсетуші компания",
+      "байланыстырушы желіге үнемі қосылып тұратын бір немесе бірнеше күшті компьютерлер"
+    ],
+    "correct": "ақпараттар пакетін желі арқылы бір бағыттан екінші бағытқа бағыттап отырады",
+    "image": null
+  },
+  {
+    "question": "Тар жолдық жүйелердің мәліметтерді жіберу түрі",
+    "options": [
+      "Бір жиеліктегі сандық сигнал",
+      "Бір бағытқа бағытталған сигнал",
+      "Анлогтық сигнал",
+      "Түрлі жиектегі сандық сиганл",
+      "Жарық импульстер"
+    ],
+    "correct": "Бір жиеліктегі сандық сигнал",
+    "image": null
+  },
+  {
+    "question": "Физикалық деңгейдегі өңделмеген биттерді берілгендер кадрына топтайтын деңгей",
+    "options": [
+      "Арналық",
+      "Қолданбалы",
+      "сеанстық",
+      "Желілік",
+      "көліктік"
+    ],
+    "correct": "Арналық",
+    "image": null
+  },
+  {
+    "question": "Берілгендер ағымында бақлау нүктелер қою арқылы",
+    "options": [
+      "сеанстық",
+      "желілік",
+      "қолданбалы",
+      "Көліктік",
+      "арналық"
+    ],
+    "correct": "сеанстық",
+    "image": null
+  },
+  {
+    "question": "Желіде түйіндері өзара үйымдастыруға, бұтақтық ұйымдасқан желілік хаттамалар тобы",
+    "options": [
+      "Хаттамалар стегі",
+      "Хаттамалар реті",
+      "Хаттамалар арнасы",
+      "Хаттамалар тұйіні",
+      "Хаттама тобы"
+    ],
+    "correct": "Хаттамалар стегі",
+    "image": null
+  },
+  {
+    "question": "Мекен-жайды адрес маршрут пен қатені тексеруді сұарысты қайта жіберуді",
+    "options": [
+      "Көоліктік",
+      "Қолданбалы",
+      "Желілік",
+      "Маршруттық",
+      "Арналық"
+    ],
+    "correct": "Көоліктік",
+    "image": null
+  },
+  {
+    "question": "0-ден юасталатын желі келесі класқа жатады",
+    "options": [
+      "А",
+      "Д",
+      "Е",
+      "С",
+      "В"
+    ],
+    "correct": "А",
+    "image": null
+  },
+  {
+    "question": "10-нан басталатын желі адресі келесі класқа жатады",
+    "options": [
+      "В",
+      "С",
+      "А",
+      "Д",
+      "Е"
+    ],
+    "correct": "В",
+    "image": null
+  },
+  {
+    "question": "110-нан басталатын желі адресі келесі класқа жатады",
+    "options": [
+      "С",
+      "А",
+      "Д",
+      "в",
+      "Е"
+    ],
+    "correct": "С",
+    "image": null
+  },
+  {
+    "question": "Интернет мәліметтер жіберудін қатнастық қымбаттылығы арқылы іске асрылады",
+    "options": [
+      "Спутникті байланыс арналары",
+      "Коаксильді топсымдар кабелі",
+      "Коммуникациялық пакеттер арналары",
+      "Модем",
+      "Орама жұп"
+    ],
+    "correct": "Спутникті байланыс арналары",
+    "image": null
+  },
+  {
+    "question": "Оң жағнан домендік атаумен аталған атаудын атауы",
+    "options": [
+      "Түйінің толық домендік атауы",
+      "Түйіннің аты",
+      "Түйіннің жартылай домендік атауы",
+      "Түйіннің қысқы домендік атауы",
+      "Түйіннің домендік атауы"
+    ],
+    "correct": "Түйінің толық домендік атауы",
+    "image": null
+  },
+  {
+    "question": "Барлығна қолжетерлік атауы",
+    "options": [
+      "Ашық",
+      "Негізгі",
+      "Еркін",
+      "Жабық",
+      "Электронды"
+    ],
+    "correct": "Ашық",
+    "image": null
+  },
+  {
+    "question": "Веб сайтының парағның құрлымы барты бірінші парағы ағаш түбірі, бірақ сайт соңы сайт мазмұнының толығымен қамттылғаның көрсетеді",
+    "options": [
+      "Ағаш",
+      "Сызық",
+      "Ретсіз",
+      "Құрлымды",
+      "Торлы"
+    ],
+    "correct": "Ағаш",
+    "image": null
+  },
+  {
+    "question": "Есептеу торабының құрылымының типтерінің саны",
+    "options": [
+      "5",
+      "6",
+      "2",
+      "3",
+      "4"
+    ],
+    "correct": "5",
+    "image": null
+  },
+  {
+    "question": "Есептеу торабының модулін қалайша атауға болады",
+    "options": [
+      "логикалық модуль",
+      "терминалды модуль",
+      "тарату модулі",
+      "сақтау модулі",
+      "басқару модулі"
+    ],
+    "correct": "логикалық модуль",
+    "image": null
+  },
+  {
+    "question": "Есептеу торабының басты элементі",
+    "options": [
+      "Хостмодуль",
+      "Терминалды модуль",
+      "Коммуникациял ық модуль",
+      "Интерфейстік модуль",
+      "Есептеу торабымен басқару модулі"
+    ],
+    "correct": "Хостмодуль",
+    "image": null
+  },
+  {
+    "question": "Хостмодуль есептеу торабының қорларын ұсынған сәтте оларды пайдаланатын модуль -",
+    "options": [
+      "Терминалды модуль",
+      "Хостмодуль",
+      "Интерфейстік модуль",
+      "Есептеу торабымен басқару модулі",
+      "Коммуникациял ық модуль"
+    ],
+    "correct": "Терминалды модуль",
+    "image": null
+  },
+  {
+    "question": "Мәліметтер арналарға кезекпен жіберілгеннен кейін тексеру мен басқарылуға, ақпараттың бағытына байланысты барлық функцияларды орындайтын модуль",
+    "options": [
+      "Коммуникациялы қ модуль",
+      "Хостмодуль",
+      "Терминалды модуль",
+      "Интерфейстік модуль",
+      "Есептеу торабымен басқару модулі"
+    ],
+    "correct": "Коммуникациялы қ модуль",
+    "image": null
+  },
+  {
+    "question": "Жоғары есепті модульдердің бірігуі үшін",
+    "options": [
+      "Интерфейстік модуль қажет",
+      "Хостмодуль қажет",
+      "Терминалды модуль қажет",
+      "-  Коммуникациял ық модуль қажет",
+      "Есептеу торабымен басқару модулі қажет"
+    ],
+    "correct": "Интерфейстік модуль қажет",
+    "image": null
+  },
+  {
+    "question": "Есептеу торабындағы басқаруды орындайды",
+    "options": [
+      "Есептеу торабымен басқару модулі",
+      "Хостмодуль",
+      "Терминалды модуль",
+      "Коммуникациял ық модуль",
+      "Интерфейстік модуль"
+    ],
+    "correct": "Есептеу торабымен басқару модулі",
+    "image": null
+  },
+  {
+    "question": "Техникалық құрылымдарда логикалық модульдердің тиімді болуын анықтау үшін есептеу торабының жұмыс атқаратын құрылымы",
+    "options": [
+      "физикалық",
+      "математикалық",
+      "алгебралық",
+      "ақпараттық",
+      "техникалық"
+    ],
+    "correct": "физикалық",
+    "image": null
+  },
+  {
+    "question": "Есептеу торабының программалық құрылымының негізгі элементерінің саны",
+    "options": [
+      "2",
+      "1",
+      "3",
+      "4",
+      "5"
+    ],
+    "correct": "2",
+    "image": null
+  },
+  {
+    "question": "Үдеріс пен  тасымалдауды басқару программаларының  арасында орналасқан нүкте -",
+    "options": [
+      "порт",
+      "фрагмент",
+      "үдеріс",
+      "көлік арнасы",
+      "хаттама"
+    ],
+    "correct": "порт",
+    "image": null
+  },
+  {
+    "question": "Таратылатын ақпараттар жиынының құрылымының күрделенуі -",
+    "options": [
+      "фрагмент",
+      "үдеріс",
+      "порт",
+      "көлік арнасы",
+      "хаттама"
+    ],
+    "correct": "фрагмент",
+    "image": null
+  },
+  {
+    "question": "Фрагменттің  тақырыптарының саны",
+    "options": [
+      "2",
+      "3",
+      "4",
+      "5",
+      "6"
+    ],
+    "correct": "2",
+    "image": null
+  },
+  {
+    "question": "Есептеу торабындағы бағдарламалық құрылымның  басқару программасын біріктіретін сызықтар -",
+    "options": [
+      "көлік арналары",
+      "үдеріс",
+      "фрагмент",
+      "порт",
+      "хаттама"
+    ],
+    "correct": "көлік арналары",
+    "image": null
+  },
+  {
+    "question": "Бағдарламалық құрылымның  көрші қабаттарының  өзара байланысы -",
+    "options": [
+      "интерфейс",
+      "хаттама",
+      "ресурс",
+      "желі",
+      "хабарлама"
+    ],
+    "correct": "интерфейс",
+    "image": null
+  },
+  {
+    "question": "Бүкіл есептеу торабының жұмыс жасауы суреттеледі",
+    "options": [
+      "хаттамаларда",
+      "ресурстарда",
+      "желіде",
+      "хабарламада",
+      "интерфейсте"
+    ],
+    "correct": "хаттамаларда",
+    "image": null
+  },
+  {
+    "question": "Хаттамалар неше топқа бөлінеді ?",
+    "options": [
+      "3",
+      "2",
+      "4",
+      "5",
+      "6"
+    ],
+    "correct": "3",
+    "image": null
+  },
+  {
+    "question": "Көп машиналы  ассоцияцианың неше түрі бар...",
+    "options": [
+      "3",
+      "4",
+      "5",
+      "6",
+      "7"
+    ],
+    "correct": "3",
+    "image": null
+  },
+  {
+    "question": "Терминалды  кешенді жай ғана қалай атауға болады",
+    "options": [
+      "Шартты",
+      "Логикалық",
+      "Интегралдық",
+      "Ресурстық",
+      "Коммуникациялық"
+    ],
+    "correct": "Шартты",
+    "image": null
+  }
+];
+
+        let currentQuestion = 0;
+        let userAnswers = Array(questions.length).fill(null);
+        let elapsedTime = 0;
+        let timer;
+
+        const timerElement = document.getElementById('timer');
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const imageElement = document.getElementById('image');
+        const prevButton = document.getElementById('prev');
+        const nextButton = document.getElementById('next');
+        const finishButton = document.getElementById('finish');
+        const resultElement = document.getElementById('result');
+        const viewIncorrectAnswersButton = document.getElementById('viewIncorrectAnswers');
+        const incorrectAnswersElement = document.getElementById('incorrectAnswers');
+
+        function startTimer() {
+            timer = setInterval(() => {
+                elapsedTime++;
+                const minutes = Math.floor(elapsedTime / 60);
+                const seconds = elapsedTime % 60;
+                timerElement.textContent = `Время: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Перемешиваем вопросы и варианты ответов
+        function shuffleQuestionsAndOptions() {
+            shuffleArray(questions);
+            questions.forEach(question => shuffleArray(question.options));
+        }
+
+        function loadQuestion() {
+            const question = questions[currentQuestion];
+            questionElement.textContent = `Вопрос ${currentQuestion + 1}: ${question.question}`;
+
+            if (question.image) {
+                imageElement.innerHTML = `<img src="${question.image}" alt="Вопрос" style="max-width: 100%; border: 1px solid #ddd; border-radius: 8px; margin-top: 10px;">`;
+            } else {
+                imageElement.innerHTML = "";
+            }
+
+            optionsElement.innerHTML = "";
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+
+                // Если вариант ответа — это изображение
+                if (option.includes('.jpg') || option.includes('.png') || option.includes('.jpeg')) {
+                    optionDiv.innerHTML = `<img src="${option}" alt="Option" style="max-width: 100px; height: auto; border-radius: 8px;">`;
+                } else {
+                    optionDiv.textContent = option;
+                }
+
+                optionDiv.onclick = () => selectOption(index);
+
+                if (userAnswers[currentQuestion] === index) {
+                    optionDiv.classList.add('selected');
+                }
+
+                optionsElement.appendChild(optionDiv);
+            });
+
+            prevButton.disabled = currentQuestion === 0;
+            nextButton.disabled = currentQuestion === questions.length - 1;
+        }
+
+        function selectOption(index) {
+            userAnswers[currentQuestion] = index;
+            loadQuestion();
+        }
+
+        function finishTest() {
+            clearInterval(timer);
+
+            const correctCount = questions.reduce((count, question, index) => {
+                return count + (question.options[userAnswers[index]] === question.correct ? 1 : 0);
+            }, 0);
+
+            const percentage = Math.round((correctCount / questions.length) * 100);
+            
+            // Создаем диаграмму
+            const canvas = document.createElement('canvas');
+            resultElement.innerHTML = `<p>Правильных ответов: ${correctCount} из ${questions.length} (${percentage}%)</p>`;
+            resultElement.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Правильные', 'Неправильные'],
+                    datasets: [{
+                        data: [correctCount, questions.length - correctCount],
+                        backgroundColor: ['#4caf50', '#f44336']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        datalabels: {
+                            display: true,
+                            formatter: (value) => {
+                                const percentage = Math.round((value / questions.length) * 100);
+                                return `${percentage}%`;
+                            },
+                            color: 'black'
+                        }
+                    }
+                }
+            });
+
+            viewIncorrectAnswersButton.style.display = 'block'; // Показываем кнопку для просмотра неправильных ответов
+        }
+
+        function viewIncorrectAnswers() {
+    if (!incorrectAnswersElement) {
+        console.error("Элемент 'incorrectAnswersElement' не найден.");
+        return;
+    }
+
+    incorrectAnswersElement.innerHTML = ''; // Очищаем предыдущий список
+
+    questions.forEach((question, index) => {
+        if (question.options[userAnswers[index]] !== question.correct) {
+            const incorrectDiv = document.createElement('div');
+            incorrectDiv.className = 'incorrect-answer';
+
+            // Проверяем наличие изображения для вопроса
+            let questionImageHTML = '';
+            if (question.image) {
+                questionImageHTML = `<img src="${question.image}" alt="Вопрос" style="max-width: 100%; border: 1px solid #ddd; border-radius: 8px; margin-top: 10px;">`;
+            }
+
+            // Форматируем выбранный пользователем ответ
+            let userAnswerHTML = '';
+            const userAnswer = question.options[userAnswers[index]];
+            if (userAnswer && (userAnswer.includes('.jpg') || userAnswer.includes('.png') || userAnswer.includes('.jpeg'))) {
+                userAnswerHTML = `<img src="${userAnswer}" alt="Ваш ответ" style="max-width: 100px; height: auto; border-radius: 8px;">`;
+            } else {
+                userAnswerHTML = userAnswer || 'Ответ не выбран';
+            }
+
+            // Форматируем правильный ответ
+            let correctAnswerHTML = '';
+            if (question.correct && (question.correct.includes('.jpg') || question.correct.includes('.png') || question.correct.includes('.jpeg'))) {
+                correctAnswerHTML = `<img src="${question.correct}" alt="Правильный ответ" style="max-width: 100px; height: auto; border-radius: 8px;">`;
+            } else {
+                correctAnswerHTML = question.correct;
+            }
+
+            // Заполняем содержимое блока неправильного ответа
+            incorrectDiv.innerHTML = `
+                <p class="question-text">Вопрос ${index + 1}: ${question.question}</p>
+                ${questionImageHTML}
+                <p><strong class="your-answer">Ваш ответ:</strong> ${userAnswerHTML}</p>
+                <p><strong class="correct-answer">Правильный ответ:</strong> ${correctAnswerHTML}</p>
+            `;
+
+            incorrectAnswersElement.appendChild(incorrectDiv);
+        }
+    });
+
+      if (incorrectAnswersElement.innerHTML === '') {
+          incorrectAnswersElement.innerHTML = '<p>Все ответы правильные!</p>';
+      }
+  }
+
+
+        prevButton.onclick = () => {
+            currentQuestion--;
+            loadQuestion();
+        };
+
+        nextButton.onclick = () => {
+            currentQuestion++;
+            loadQuestion();
+        };
+
+        finishButton.onclick = finishTest;
+        viewIncorrectAnswersButton.onclick = viewIncorrectAnswers;
+
+        // Перемешиваем вопросы и ответы только один раз перед началом
+        shuffleQuestionsAndOptions();
+        startTimer();
+        loadQuestion();
+    </script>
+</body>
+</html>
